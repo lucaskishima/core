@@ -1,5 +1,4 @@
-"""Reproduce an Alert state."""
-from __future__ import annotations
+# Reprodutor de estados de alerta
 
 import asyncio
 from collections.abc import Iterable
@@ -18,26 +17,25 @@ from .const import DOMAIN, LOGGER
 
 VALID_STATES = {STATE_ON, STATE_OFF}
 
-
+# Reprodutor de um único estado
 async def _async_reproduce_state(
     hass: HomeAssistant,
     state: State,
     *,
     context: Context | None = None,
-    reproduce_options: dict[str, Any] | None = None,
-) -> None:
-    """Reproduce a single state."""
+    reproduce_options: Any = None
+):
     if (cur_state := hass.states.get(state.entity_id)) is None:
-        LOGGER.warning("Unable to find entity %s", state.entity_id)
+        LOGGER.warning("Não foi possível encontrar a entidade %s", state.entity_id)
         return
 
     if state.state not in VALID_STATES:
         LOGGER.warning(
-            "Invalid state specified for %s: %s", state.entity_id, state.state
+            "Estado inválido especificado para %s: %s", state.entity_id, state.state
         )
         return
 
-    # Return if we are already at the right state.
+    # Retorna se já estiver no estado desejado
     if cur_state.state == state.state:
         return
 
@@ -53,16 +51,15 @@ async def _async_reproduce_state(
         DOMAIN, service, service_data, context=context, blocking=True
     )
 
-
+# Reprodutor de vários estados
 async def async_reproduce_states(
     hass: HomeAssistant,
     states: Iterable[State],
     *,
     context: Context | None = None,
-    reproduce_options: dict[str, Any] | None = None,
-) -> None:
-    """Reproduce Alert states."""
-    # Reproduce states in parallel.
+    reproduce_options: Any = None
+):
+    # Reprodutor de estados em paralelo
     await asyncio.gather(
         *(
             _async_reproduce_state(

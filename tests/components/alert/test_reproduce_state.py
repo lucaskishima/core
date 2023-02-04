@@ -5,21 +5,27 @@ from homeassistant.helpers.state import async_reproduce_state
 from tests.common import async_mock_service
 
 
-async def test_reproducing_states(hass, caplog):
-    """Test reproducing Alert states."""
+async def test_no_reproduce_for_already_desired_states(hass, caplog):
     hass.states.async_set("alert.entity_off", "off", {})
     hass.states.async_set("alert.entity_on", "on", {})
 
     turn_on_calls = async_mock_service(hass, "alert", "turn_on")
     turn_off_calls = async_mock_service(hass, "alert", "turn_off")
 
-    # These calls should do nothing as entities already in desired state
     await async_reproduce_state(
         hass, [State("alert.entity_off", "off"), State("alert.entity_on", "on")]
     )
 
     assert len(turn_on_calls) == 0
     assert len(turn_off_calls) == 0
+
+
+async def test_reproduce_for_different_states(hass, caplog):
+    hass.states.async_set("alert.entity_off", "off", {})
+    hass.states.async_set("alert.entity_on", "on", {})
+
+    turn_on_calls = async_mock_service(hass, "alert", "turn_on")
+    turn_off_calls = async_mock_service(hass, "alert", "turn_off")
 
     # Test invalid state is handled
     await async_reproduce_state(hass, [State("alert.entity_off", "not_supported")])
